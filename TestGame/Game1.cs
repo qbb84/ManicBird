@@ -25,7 +25,7 @@ public class Game1 : Game {
     }
 
     protected override void Initialize() {
-        stateManager.ChangeState(new MainMenuState(stateManager, new ContentStateManager(Content), _graphics));
+        stateManager.ChangeState(new MainMenuState(stateManager, new ContentStateManager(Content), _graphics, spriteBatch, this.Services));
         base.Initialize();
     }
 

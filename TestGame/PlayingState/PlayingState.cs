@@ -22,5 +22,6 @@ public class PlayingState : IGameState {
     }
 
     public void Draw(SpriteBatch spriteBatch) {
+
     }
 }
