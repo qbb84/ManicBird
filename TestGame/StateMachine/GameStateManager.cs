@@ -5,20 +5,20 @@ namespace TestGame.StateMachine;
 
 public class GameStateManager {
 
-        private IGameState currentState;
+        private IGameState _currentState;
 
         public void ChangeState(IGameState newState) {
-            currentState?.Exit();
-            currentState = newState;
-            currentState.Enter();
+            _currentState?.Exit();
+            _currentState = newState;
+            _currentState.Enter();
         }
 
         public void Update(GameTime gameTime) {
-            currentState?.Update(gameTime);
+            _currentState?.Update(gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch) {
-            currentState?.Draw(spriteBatch);
+            _currentState?.Draw(spriteBatch);
         }
 
 
