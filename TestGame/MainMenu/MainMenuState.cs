@@ -38,17 +38,17 @@ public class MainMenuState : AbstractState {
 
 
 
-    public MainMenuState(GameStateManager gameStateManager, Game game, GraphicsDeviceManager graphicsDeviceManager): base(gameStateManager, game, graphicsDeviceManager) {
+    public MainMenuState(GameStateManager gameStateManager, Game game): base(gameStateManager, game) {
         _mainMenuResource = ResourceManager.GetInstance(game.Content);
 
-        _maxWidth = GraphicsDeviceManager.GraphicsDevice.Viewport.Width;
-        _maxHeight = GraphicsDeviceManager.GraphicsDevice.Viewport.Height;
+        _maxWidth = game.GraphicsDevice.Viewport.Width;
+        _maxHeight = game.GraphicsDevice.Viewport.Height;
 
         _widthBaseSize = _maxWidth - 600;
         _heightBaseSize = _maxHeight - 200;
 
-        _currentBirdLocation.X = (_maxWidth / 2) - 17;
-        _currentBirdLocation.Y = (_maxHeight / 2) + 37;
+        _currentBirdLocation.X = (_maxWidth / 2f) - 17;
+        _currentBirdLocation.Y = (_maxHeight / 2f) + 37;
 
         _birdList = new List<Texture2D>();
     }
@@ -80,7 +80,7 @@ public class MainMenuState : AbstractState {
 
     public override void Update(GameTime gameTime) {
         if (UserPressedStart()) {
-            StateManager.ChangeState(new PlayingState.PlayingState(StateManager, Game, GraphicsDeviceManager, _mainMenuResource));
+            StateManager.ChangeState(new PlayingState.PlayingState(StateManager, Game));
         }
 
         if (_timedUpdate.UpdateTimer(gameTime)) {

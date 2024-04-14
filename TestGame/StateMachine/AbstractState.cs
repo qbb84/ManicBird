@@ -11,12 +11,10 @@ public abstract class AbstractState : IGameState {
 
     protected readonly GameStateManager StateManager;
     protected readonly Game Game;
-    protected readonly GraphicsDeviceManager GraphicsDeviceManager;
 
-    protected AbstractState(GameStateManager gameStateManager, Game game, GraphicsDeviceManager graphicsDeviceManager) {
+    protected AbstractState(GameStateManager gameStateManager, Game game) {
         StateManager = gameStateManager;
         Game = game;
-        GraphicsDeviceManager = graphicsDeviceManager;
     }
 
 }

@@ -23,10 +23,8 @@ public class Game1 : Game {
     }
 
     protected override void Initialize() {
-        _stateManager.ChangeState(new MainMenuState(_stateManager, this, _graphics));
-
+        _stateManager.ChangeState(new MainMenuState(_stateManager, this));
         Window.Title = "ManicBird";
-
 
         base.Initialize();
     }
