@@ -9,41 +9,43 @@ using TestGame.StateMachine;
 namespace TestGame;
 
 public class Game1 : Game {
-
     private readonly GraphicsDeviceManager _graphics;
-    private readonly GameStateManager stateManager;
-    private readonly ContentStateManager _contentStateManager;
+    private readonly GameStateManager _stateManager;
 
-    private static SpriteBatch spriteBatch;
+    private static SpriteBatch _spriteBatch;
 
     public Game1() {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        stateManager = new GameStateManager();
+        _stateManager = new GameStateManager();
     }
 
     protected override void Initialize() {
-        stateManager.ChangeState(new MainMenuState(stateManager, new ContentStateManager(Content), _graphics, spriteBatch, this.Services));
+        _stateManager.ChangeState(new MainMenuState(_stateManager, this, _graphics));
+
+        Window.Title = "ManicBird";
+
+
         base.Initialize();
     }
 
     protected override void LoadContent() {
-        spriteBatch = new SpriteBatch(GraphicsDevice);
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime) {
-        stateManager.Update(gameTime);
+        _stateManager.Update(gameTime);
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime) {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        spriteBatch.Begin();
-        stateManager.Draw(spriteBatch);
-        spriteBatch.End();
+        _spriteBatch.Begin();
+        _stateManager.Draw(_spriteBatch);
+        _spriteBatch.End();
 
         base.Draw(gameTime);
     }

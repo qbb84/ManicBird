@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TestGame.Resource;
 using TestGame.StateMachine;
 using TestGame.Utils;
 
 namespace TestGame.MainMenu;
 
-public class MainMenuState : IGameState {
-
-    private readonly GameStateManager _stateManager;
-    private readonly ContentStateManager _contentManager;
-    private readonly GraphicsDeviceManager _graphicsDeviceManager;
-    private readonly SpriteBatch _spriteBatch;
+public class MainMenuState : AbstractState {
+    private readonly ResourceManager _mainMenuResource;
 
     private Texture2D _mainMenuBackground;
     private Texture2D _startGraphics;
@@ -28,68 +26,85 @@ public class MainMenuState : IGameState {
     private readonly int _widthBaseSize;
     private readonly int _heightBaseSize;
 
-    private List<Texture2D> _birdList;
+    private readonly List<Texture2D> _birdList;
     private TimedUpdate _timedUpdate;
+    private Rectangle _mainBackgroundBounds;
 
-    private int _currentBirdIndex = 0;
+    private SpritePreservation _mainBackgroundSprite;
+    private SpritePreservation _bluebirdSprite;
+
+    private readonly Vector2 _currentBirdLocation;
+    private int _currentBirdIndex;
 
 
 
-    public MainMenuState(GameStateManager gameStateManager, ContentStateManager contentStateManager, GraphicsDeviceManager graphicsDeviceManager,
-                         SpriteBatch spriteBatch, IServiceProvider serviceProvider) {
-        _stateManager = gameStateManager;
-        _contentManager = contentStateManager;
-        _graphicsDeviceManager = graphicsDeviceManager;
-        _spriteBatch = spriteBatch;
+    public MainMenuState(GameStateManager gameStateManager, Game game, GraphicsDeviceManager graphicsDeviceManager): base(gameStateManager, game, graphicsDeviceManager) {
+        _mainMenuResource = ResourceManager.GetInstance(game.Content);
 
-        _maxWidth = _graphicsDeviceManager.GraphicsDevice.Viewport.Width;
-        _maxHeight = _graphicsDeviceManager.GraphicsDevice.Viewport.Height;
+        _maxWidth = GraphicsDeviceManager.GraphicsDevice.Viewport.Width;
+        _maxHeight = GraphicsDeviceManager.GraphicsDevice.Viewport.Height;
 
         _widthBaseSize = _maxWidth - 600;
         _heightBaseSize = _maxHeight - 200;
 
-        _birdList = new List<Texture2D>();
+        _currentBirdLocation.X = (_maxWidth / 2) - 17;
+        _currentBirdLocation.Y = (_maxHeight / 2) + 37;
 
+        _birdList = new List<Texture2D>();
     }
 
-    public void Enter() {
-        _mainMenuBackground = _contentManager.Load("sprites/background-day");
-        _startGraphics = _contentManager.Load("sprites/message");
+    public override void Enter() {
+        _mainBackgroundSprite = _mainMenuResource.GetSprite("sprites/background-day");
+        _startGraphics = _mainMenuResource.GetSprite("sprites/message").Texture;
+        _bluebirdSprite = _mainMenuResource.GetSprite("sprites/bluebird-downflap");
+        _redbird = _mainMenuResource.GetSprite("sprites/redbird-downflap").Texture;
+        _yellowbird = _mainMenuResource.GetSprite("sprites/yellowbird-downflap").Texture;
 
-        _bluebird = _contentManager.Load("sprites/bluebird-downflap");
-        _redbird = _contentManager.Load("sprites/redbird-downflap");
-        _yellowbird = _contentManager.Load("sprites/yellowbird-downflap");
+        _mainMenuBackground = _mainBackgroundSprite.Texture;
+        _bluebird = _bluebirdSprite.Texture;
         _currentBirdSprite = _bluebird;
 
-        _birdList.Add(_bluebird); _birdList.Add(_redbird); _birdList.Add(_yellowbird);
+        _birdList.Add(_bluebird);
+        _birdList.Add(_redbird);
+        _birdList.Add(_yellowbird);
 
         _timedUpdate = new TimedUpdate(TimedUpdate.CheckTime.ONE_SECOND);
     }
 
-    public void Exit() { }
+    public override void Exit() {
+        _mainMenuResource.UnloadResource("sprites/message");
 
-    public void Update(GameTime gameTime) {
+        _bluebirdSprite.Position = _currentBirdLocation;
+        _mainBackgroundSprite.Rectangle = _mainBackgroundBounds;
+    }
+
+    public override void Update(GameTime gameTime) {
         if (UserPressedStart()) {
-            _stateManager.ChangeState(new PlayingState.PlayingState(_stateManager));
+            StateManager.ChangeState(new PlayingState.PlayingState(StateManager, Game, GraphicsDeviceManager, _mainMenuResource));
         }
 
         if (_timedUpdate.UpdateTimer(gameTime)) {
             _currentBirdSprite = _birdList[_currentBirdIndex];
             _currentBirdIndex = (_currentBirdIndex + 1) % _birdList.Count;
         }
+
     }
 
-    public void Draw(SpriteBatch spriteBatch) {
-        spriteBatch.Draw(_mainMenuBackground, new Rectangle(0, 0, _maxWidth, _maxHeight), Color.White);
+    public override void Draw(SpriteBatch spriteBatch) {
+        _mainBackgroundBounds = new Rectangle(0, 0, _maxWidth, _maxHeight);
+        spriteBatch.Draw(_mainMenuBackground, _mainBackgroundBounds, Color.White);
 
-        var relativeCenterX = (_maxWidth / 2) - (_widthBaseSize / 2);
-        var relativeCenterY = (_maxHeight / 2) - (_heightBaseSize / 2);
+        var relativeCenterX = _maxWidth / 2 - _widthBaseSize / 2;
+        var relativeCenterY = _maxHeight / 2 - _heightBaseSize / 2;
+
+
         spriteBatch.Draw(_startGraphics, new Rectangle(relativeCenterX, relativeCenterY, _widthBaseSize, _heightBaseSize), Color.White);
-
-        spriteBatch.Draw(_currentBirdSprite, new Vector2((_maxWidth / 2) - 17, (_maxHeight / 2) + 37), Color.White);
+        spriteBatch.Draw(_currentBirdSprite, _currentBirdLocation, Color.White);
     }
 
     private bool UserPressedStart() {
-        return Mouse.GetState().LeftButton == ButtonState.Pressed;
+        var mouseState = Mouse.GetState();
+        var pos = mouseState.Position;
+        return _mainMenuBackground.GraphicsDevice.Viewport.Bounds.Contains(pos.X, pos.Y) && mouseState.LeftButton == ButtonState.Pressed;
     }
 }
