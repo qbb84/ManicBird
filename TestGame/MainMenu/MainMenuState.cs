@@ -68,7 +68,7 @@ public class MainMenuState : AbstractState {
         _birdList.Add(_redbird);
         _birdList.Add(_yellowbird);
 
-        _timedUpdate = new TimedUpdate(TimedUpdate.CheckTime.ONE_SECOND);
+        _timedUpdate = new TimedUpdate(TimedUpdate.CheckTime.OneSecond);
     }
 
     public override void Exit() {

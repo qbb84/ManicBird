@@ -9,7 +9,8 @@ public struct TimedUpdate {
     private CheckTime _checkTime { get; set; }
 
     public enum CheckTime {
-        ONE_SECOND,
+        OneSecond,
+        TwoSecond
     }
 
     public TimedUpdate(CheckTime checkTime) {
@@ -21,8 +22,14 @@ public struct TimedUpdate {
         Timer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 
         switch (_checkTime) {
-            case CheckTime.ONE_SECOND:
+            case CheckTime.OneSecond:
                 if (Timer >= 1.0f) {
+                    Timer = 0;
+                    return true;
+                }
+                break;
+            case CheckTime.TwoSecond:
+                if (Timer >= 2.0f) {
                     Timer = 0;
                     return true;
                 }
