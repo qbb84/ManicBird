@@ -2,3 +2,5 @@
 
 TODO Think about adding events for the pipes (and in general to get used to them)
 TODO Texture2D/Sprite Animations
+
+TODO Seperate Logic from PlayingState events to new EventHandler class

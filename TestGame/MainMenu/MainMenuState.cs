@@ -39,7 +39,8 @@ public class MainMenuState : AbstractState {
 
 
     public MainMenuState(GameStateManager gameStateManager, Game game): base(gameStateManager, game) {
-        _mainMenuResource = ResourceManager.GetInstance(game.Content);
+        ResourceManager.ContentManagerProvider.ContentManager = game.Content;
+        _mainMenuResource = ResourceManager.Instance;
 
         _maxWidth = game.GraphicsDevice.Viewport.Width;
         _maxHeight = game.GraphicsDevice.Viewport.Height;

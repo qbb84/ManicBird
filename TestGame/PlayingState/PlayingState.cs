@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TestGame.MainMenu;
+using TestGame.PlayingState.Collision;
+using TestGame.PlayingState.Collision.EventArgs;
 using TestGame.PlayingState.Pipes;
 using TestGame.Resource;
 using TestGame.StateMachine;
@@ -31,17 +33,18 @@ public sealed class PlayingState : AbstractState {
 
     private readonly ResourceManager _resourceManager;
     private TimedUpdate _pipeSpawnTime;
+
     private Vector2 _bottomFloorPosition;
     private Rectangle _backgroundPositionAnimation;
 
-    private readonly Func<int, int> _createRandomNumber = input => new Random().Next(input);
+    private Func<int, int> _createRandomNumber;
 
 
 
     public PlayingState(GameStateManager gameStateManager, Game game): base(gameStateManager, game) {
         _gameStateManager = gameStateManager;
         _game = game;
-        _resourceManager = ResourceManager.GetInstance();
+        _resourceManager = ResourceManager.Instance;
     }
 
     public override void Enter() {
@@ -57,6 +60,8 @@ public sealed class PlayingState : AbstractState {
 
         _hasFirstPipePassedLeftMostScreen = false;
         _pipeSpawnTime = new TimedUpdate(TimedUpdate.CheckTime.TwoSecond);
+
+        _createRandomNumber = input => new Random().Next(input);
     }
 
     public override void Exit() {
@@ -67,6 +72,7 @@ public sealed class PlayingState : AbstractState {
         UpdateCheckCollisions();
         UpdateScrollingBackground();
         UpdateSpawnedPipes(gameTime);
+        Console.WriteLine(PipeManager.GetPipeQueue().Count);
     }
 
     public override void Draw(SpriteBatch spriteBatch) {
@@ -87,12 +93,8 @@ public sealed class PlayingState : AbstractState {
         var birdTop = _bluebirdPreservation.Position.Y - _bluebirdPreservation.Texture.Height;
         var birdBottom = _bluebirdPreservation.Position.Y + _bluebirdPreservation.Texture.Height;
 
-        if (ScreenTopCollision(birdTop, _bluebirdPreservation.Position.X, ref birdTop)) {
-
-        }
-        if (ScreenBottomCollision(birdBottom, _bottomFloorPosition.Y, _bluebirdPreservation.Position.X, ref birdBottom)) {
-
-        }
+        ScreenTopCollision(birdTop, _bluebirdPreservation.Position.X, ref birdTop);
+        ScreenBottomCollision(birdBottom, _bottomFloorPosition.Y, _bluebirdPreservation.Position.X, ref birdBottom);
     }
 
     private void UpdateScrollingBackground() {
@@ -156,20 +158,24 @@ public sealed class PlayingState : AbstractState {
         _bluebirdPreservation.Position = new Vector2(birdX, birdY);
     }
 
-    private bool ScreenTopCollision(float birdTop, float birdX, ref float birdY) {
-        if (!(birdTop <= 0)) return false;
+    private void ScreenTopCollision(float birdTop, float birdX, ref float birdY) {
+        if (!(birdTop <= 0)) return;
 
         birdY = Math.Max(birdY, 0);
         _bluebirdPreservation.Position = new Vector2(birdX, birdY);
-        return true;
+
+
+        InvokeCollisionEvent(CollisionType.ViewportTop, _bluebirdPreservation);
     }
 
-    private bool ScreenBottomCollision(float birdBottom, float floorTop, float birdX, ref float birdY) {
-        if (!(birdBottom >= floorTop)) return false;
+    private void ScreenBottomCollision(float birdBottom, float floorTop, float birdX, ref float birdY) {
+        if (!(birdBottom >= floorTop)) return;
 
         birdY = Math.Clamp(birdY, 0, floorTop - _bluebirdPreservation.Texture.Height);
         _bluebirdPreservation.Position = new Vector2(birdX, birdY);
-        return true;
+
+
+        InvokeCollisionEvent(CollisionType.ViewportBottom, _bluebirdPreservation);
     }
 
     private void TryDrawPipes(SpriteBatch spriteBatch) {
@@ -224,7 +230,9 @@ public sealed class PlayingState : AbstractState {
             var bottomPipe = new PipeMaker()
                 .SetContent(_game.Content)
                 .SetSprite(bottomSprite)
-                .SetPosition(new Vector2(_game.GraphicsDevice.Viewport.Width - 100, _game.GraphicsDevice.Viewport.Height - pipeHeight))
+                .SetPosition(new Vector2(
+                    _game.GraphicsDevice.Viewport.Width - 100,
+                    _bottomFloorPosition.Y - pipeHeight))
                 .SetRectangle(pipeRectangle)
                 .CreatePipe();
 
@@ -251,5 +259,13 @@ public sealed class PlayingState : AbstractState {
             bottomPipe.DecreasePosX(1);
         }
         return true;
+    }
+
+    private void InvokeCollisionEvent(CollisionType collisionType, SpritePreservation spritePreservation) {
+        var screenTopEventArgs = new OnViewportCollideEventArgs {
+            CollisionType = collisionType,
+            PlayerPreservation = spritePreservation
+        };
+        CollideManager.Instance.InvokeOnBirdCollide(screenTopEventArgs);
     }
 }

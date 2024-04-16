@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TestGame.MainMenu;
+using TestGame.PlayingState.Events;
 using TestGame.StateMachine;
 
 namespace TestGame;
@@ -25,6 +26,8 @@ public class Game1 : Game {
     protected override void Initialize() {
         _stateManager.ChangeState(new MainMenuState(_stateManager, this));
         Window.Title = "ManicBird";
+
+        var eventRegistration = new EventRegistration();
 
         base.Initialize();
     }
