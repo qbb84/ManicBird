@@ -10,7 +10,10 @@ public struct TimedUpdate {
 
     public enum CheckTime {
         OneSecond,
-        TwoSecond
+        TwoSecond,
+        ThreeSecond,
+        FourSecond,
+        FiveSecond,
     }
 
     public TimedUpdate(CheckTime checkTime) {
@@ -30,6 +33,24 @@ public struct TimedUpdate {
                 break;
             case CheckTime.TwoSecond:
                 if (Timer >= 2.0f) {
+                    Timer = 0;
+                    return true;
+                }
+                break;
+            case CheckTime.ThreeSecond:
+                if (Timer >= 3.0f) {
+                    Timer = 0;
+                    return true;
+                }
+                break;
+            case CheckTime.FourSecond:
+                if (Timer >= 4.0f) {
+                    Timer = 0;
+                    return true;
+                }
+                break;
+            case CheckTime.FiveSecond:
+                if (Timer >= 5.0f) {
                     Timer = 0;
                     return true;
                 }

@@ -1,6 +1,7 @@
 ﻿TODO Add a enum dictionary for each state so that memory and space is conserved, allowing simpler state switching
 
-TODO Think about adding events for the pipes (and in general to get used to them)
+
 TODO Texture2D/Sprite Animations
 
-TODO Seperate Logic from PlayingState events to new EventHandler class
+TODO Maybe move Event to it's own directory
+TODO Add an Engine Directory/Module

@@ -8,7 +8,7 @@ namespace TestGame.PlayingState.Pipes;
 public class PipeMaker: IPipeData<PipeMaker, Pipe> {
     public SpritePreservation SpritePreservation { get; set; }
     public Vector2? Position { get; set; }
-    public float Scale { get; set; }
+    public Vector2? Scale { get; set; }
     public Rectangle Rectangle { get; set; }
 
     private static ContentManager _contentManager;
@@ -24,7 +24,7 @@ public class PipeMaker: IPipeData<PipeMaker, Pipe> {
         return this;
     }
 
-    public PipeMaker SetScale(float scale) {
+    public PipeMaker SetScale(Vector2 scale) {
         Scale = scale;
         return this;
     }
@@ -44,7 +44,8 @@ public class PipeMaker: IPipeData<PipeMaker, Pipe> {
         if (_contentManager == null) throw new InvalidOperationException("Cannot create Pipe: ContentManager is not set.");
 
         var defaultPositionCheck = Position ?? Vector2.Zero;
+        var defaultScaleCheck = Scale ?? Vector2.One;
 
-        return new Pipe(SpritePreservation, defaultPositionCheck, Scale, Rectangle);
+        return new Pipe(SpritePreservation, defaultPositionCheck, defaultScaleCheck, Rectangle);
     }
 }

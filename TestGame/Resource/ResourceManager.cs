@@ -17,7 +17,6 @@ public class ResourceManager {
     public static ResourceManager Instance => LazyInstance.Value;
 
 
-
     private ResourceManager(ContentManager content) {
         _content = content ?? throw new InvalidOperationException("ContentManager cannot be null.");
         _sprites = new Dictionary<string, SpritePreservation>();

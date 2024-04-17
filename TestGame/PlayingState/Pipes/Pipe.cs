@@ -6,26 +6,27 @@ namespace TestGame.PlayingState.Pipes;
 
 public class Pipe {
     public SpritePreservation SpritePreservation { get; private set; }
-    public Vector2 Position { get; private set; }
-    public float Scale { get; private set; }
+    public Vector2 Position { get; set; }
+    public Vector2 Scale { get; private set; }
     public Rectangle Rectangle { get; set; }
 
     private readonly Texture2D _texture2DSave;
+    private Vector2 StartPositionSave { get; }
 
 
-    public Pipe(SpritePreservation spritePreservation, Vector2 position, float scale, Rectangle rectangle) {
+    public Pipe(SpritePreservation spritePreservation, Vector2 position, Vector2 scale, Rectangle rectangle) {
         SpritePreservation = spritePreservation;
         Position = position;
         Scale = scale;
         Rectangle = rectangle;
 
         _texture2DSave = spritePreservation.Texture;
+        StartPositionSave = Position;
     }
 
     public void ResetPipe() {
         SpritePreservation = new SpritePreservation(_texture2DSave);
-        Position = Vector2.Zero;
-        Scale = 0;
+        Position = StartPositionSave;
     }
 
     public void DecreasePosX(int amount) {

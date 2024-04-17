@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace TestGame.PlayingState.Pipes;
@@ -9,6 +8,10 @@ public static class PipeManager {
 
     static PipeManager() {
         PipePool = new Queue<Tuple<Pipe, Pipe>>();
+    }
+
+    public static void AddPipe(Tuple<Pipe, Pipe> pipeTuple) {
+        PipePool.Enqueue(pipeTuple);
     }
 
     public static void AddPipe(Pipe topPipe, Pipe bottomPipe) {

@@ -2,5 +2,7 @@
 
 public enum CollisionType {
     ViewportTop,
-    ViewportBottom
+    ViewportBottom,
+    Sprite,
+    Pipe
 }
