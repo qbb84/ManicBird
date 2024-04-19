@@ -3,7 +3,7 @@ using TestGame.Resource;
 
 namespace TestGame.PlayingState.Pipes;
 
-public interface IPipeData<out T, out TE> where T: class {
+public interface IPipeData<out T, out TE> where T: class where TE: class {
     SpritePreservation SpritePreservation { get; set; }
     Vector2? Position { get; set; }
     Vector2? Scale { get; set; }

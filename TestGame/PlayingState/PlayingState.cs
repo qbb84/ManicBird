@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TestGame.PlayingState.Collision;
+using TestGame.PlayingState.Collision.CollisionTypes;
 using TestGame.PlayingState.Pipes;
 using TestGame.Resource;
 using TestGame.StateMachine;
@@ -13,16 +14,17 @@ namespace TestGame.PlayingState;
 
 public sealed class PlayingState : AbstractState {
     private SpritePreservation _mainBackgroundSprite;
-    private SpritePreservation _bluebirdPreservation;
+    private SpritePreservation _player;
     private SpritePreservation _bottomFloor;
 
     private const float Gravity = 8f;
-    private const float JumpStrength = -150f;
-    private const int DistanceBetweenPipe = 15;
+    private const float JumpStrength = -180f;
+    private const int DistanceBetweenPipe = 18;
+    private const int BackgroundScrollingSpeed = 2;
+
     private float _birdVelocity = 300;
     private bool _isHoldingSpace;
     private bool _hasFirstPipePassedLeftMostScreen;
-    private bool pipeHeightRandomCheck;
 
     private Texture2D _mainBackground;
     private Texture2D _bluebird;
@@ -32,38 +34,33 @@ public sealed class PlayingState : AbstractState {
     private TimedUpdate _pipeSpawnTime;
 
     private Vector2 _bottomFloorPosition;
+    private Vector2 _pipeScale;
     private Rectangle _backgroundPositionAnimation;
 
-    private Func<int, int> _createRandomNumber;
 
 
-
-    public PlayingState(GameStateManager gameStateManager, Game game): base(gameStateManager, game) {
+    public PlayingState(GameStateManager gameStateManager, Game game) : base(gameStateManager, game) {
         _resourceManager = ResourceManager.Instance;
     }
 
-
-
     public override void Enter() {
         _mainBackgroundSprite = _resourceManager.GetSprite("sprites/background-day");
-        _bluebirdPreservation = _resourceManager.GetSprite("sprites/bluebird-downflap");
+        _player = _resourceManager.GetSprite("sprites/bluebird-downflap");
         _bottomFloor = _resourceManager.GetSprite("sprites/base");
         _pipeTexture = _resourceManager.GetSprite("sprites/pipe-green").Texture;
 
         _mainBackground = _mainBackgroundSprite.Texture;
-        _bluebird = _bluebirdPreservation.Texture;
+        _bluebird = _player.Texture;
 
         _backgroundPositionAnimation = _mainBackgroundSprite.Rectangle;
 
         _hasFirstPipePassedLeftMostScreen = false;
-        _pipeSpawnTime = new TimedUpdate(TimedUpdate.CheckTime.FourSecond);
+        _pipeSpawnTime = new TimedUpdate(TimedUpdate.CheckTime.TwoSecond);
 
-        _createRandomNumber = input => new Random().Next(input);
-        pipeHeightRandomCheck = false;
+        _pipeScale = new Vector2(1.5f, 1.0f);
     }
 
-    public override void Exit() {
-    }
+    public override void Exit() { }
 
     public override void Update(GameTime gameTime) {
         UpdateBirdPosition(gameTime);
@@ -81,10 +78,10 @@ public sealed class PlayingState : AbstractState {
 
 
     private void UpdateBirdPosition(GameTime gameTime) {
-        var birdX = _bluebirdPreservation.Position.X;
-        var birdY = _bluebirdPreservation.Position.Y;
+        var birdX = _player.Position.X;
+        var birdY = _player.Position.Y;
         UpdateBirdMovement(gameTime, ref birdX, ref birdY);
-        _bluebirdPreservation.Position = new Vector2(birdX, birdY);
+        _player.Position = new Vector2(birdX, birdY);
     }
 
     private void UpdateBirdMovement(GameTime gameTime, ref float birdX, ref float birdY) {
@@ -101,40 +98,55 @@ public sealed class PlayingState : AbstractState {
 
         _birdVelocity += Gravity;
         birdY += _birdVelocity * deltaTime;
-        _bluebirdPreservation.Position = new Vector2(birdX, birdY);
+        _player.Position = new Vector2(birdX, birdY);
     }
 
     private void UpdateCheckCollisions() {
-        var birdTop = _bluebirdPreservation.Position.Y - _bluebirdPreservation.Texture.Height;
-        var birdBottom = _bluebirdPreservation.Position.Y + _bluebirdPreservation.Texture.Height;
+        var birdPositionY = _player.Position.Y;
+
+        var birdTop = birdPositionY - _player.Texture.Height;
+        var birdBottom = birdPositionY+ _player.Texture.Height;
 
         ScreenTopCollision(birdTop);
         ScreenBottomCollision(birdBottom, _bottomFloorPosition.Y);
+
+        PipeCollision();
     }
 
     private void UpdateScrollingBackground() {
-        _bottomFloorPosition.X -= 1;
-        _backgroundPositionAnimation.X -= 1;
+        _bottomFloorPosition.X -= BackgroundScrollingSpeed;
+        _backgroundPositionAnimation.X -= BackgroundScrollingSpeed;
 
         if (_backgroundPositionAnimation.X < -_mainBackground.Width) {
             _backgroundPositionAnimation.X = 0;
         }
     }
 
-     private void UpdateSpawnedPipes(GameTime gameTime) {
-        var hasFourSecondsPassed = _pipeSpawnTime.UpdateTimer(gameTime);
+    private void UpdateSpawnedPipes(GameTime gameTime) {
+        var hasTimePassed = _pipeSpawnTime.UpdateTimer(gameTime);
 
-        switch (hasFourSecondsPassed) {
+        var viewportHeight = Game.GraphicsDevice.Viewport.Height;
+        var pipeTextureHeight = _pipeTexture.Height;
+        var pipeTextureWidth = _pipeTexture.Width;
+
+        var (topPipeRectangle, bottomPipeRectangle) = PipeManager.CalculateRandomPipeHeight(
+            gameTime,
+            viewportHeight,
+            pipeTextureHeight,
+            pipeTextureWidth,
+            DistanceBetweenPipe,
+            _pipeScale
+        );
+
+        switch (hasTimePassed) {
             case true when !_hasFirstPipePassedLeftMostScreen: {
-                var (topPipeRectangle, bottomPipeRectangle) = CalculateRandomPipeHeight(gameTime);
-
                 var topSprite = new SpritePreservation(_pipeTexture);
                 var topPipe = new PipeMaker()
                     .SetContent(Game.Content)
                     .SetSprite(topSprite)
-                    .SetPosition(new Vector2(Game.GraphicsDevice.Viewport.Width - 25, 0))
+                    .SetPosition(new Vector2(Game.GraphicsDevice.Viewport.Width, 0))
                     .SetRectangle(topPipeRectangle)
-                    .SetScale(new Vector2(1.5f, 1f))
+                    .SetScale(_pipeScale)
                     .CreatePipe();
 
 
@@ -143,10 +155,10 @@ public sealed class PlayingState : AbstractState {
                     .SetContent(Game.Content)
                     .SetSprite(bottomSprite)
                     .SetPosition(new Vector2(
-                        Game.GraphicsDevice.Viewport.Width - 25,
+                        Game.GraphicsDevice.Viewport.Width,
                         _bottomFloorPosition.Y - bottomPipeRectangle.Height))
                     .SetRectangle(bottomPipeRectangle)
-                    .SetScale(new Vector2(1.5f, 1f))
+                    .SetScale(_pipeScale)
                     .CreatePipe();
 
 
@@ -158,13 +170,13 @@ public sealed class PlayingState : AbstractState {
                 pipeSet.Item1.ResetPipe();
                 pipeSet.Item2.ResetPipe();
 
-                var (topPipeRectangle, bottomPipeRectangle) = CalculateRandomPipeHeight(gameTime);
                 pipeSet.Item1.Rectangle = topPipeRectangle;
 
                 pipeSet.Item2.Rectangle = bottomPipeRectangle;
                 pipeSet.Item2.Position = new Vector2(
-                    Game.GraphicsDevice.Viewport.Width - 25,
-                    _bottomFloorPosition.Y - bottomPipeRectangle.Height);
+                    Game.GraphicsDevice.Viewport.Width,
+                    _bottomFloorPosition.Y - bottomPipeRectangle.Height
+                );
 
 
                 PipeManager.AddPipe(pipeSet);
@@ -193,7 +205,7 @@ public sealed class PlayingState : AbstractState {
     }
 
     private void DrawBird(SpriteBatch spriteBatch) {
-        spriteBatch.Draw(_bluebird, _bluebirdPreservation.Position, Color.White);
+        spriteBatch.Draw(_bluebird, _player.Position, Color.White);
     }
 
     private void DrawFloor(SpriteBatch spriteBatch) {
@@ -250,38 +262,34 @@ public sealed class PlayingState : AbstractState {
 
     private void ScreenTopCollision(float birdTop) {
         if (!(birdTop <= 0)) return;
-        CollideManager.Instance.InvokeCollisionEvent(CollisionType.ViewportTop, _bluebirdPreservation);
+        CollideManager.Instance.InvokeViewportCollisionEvent(ViewportCollisionType.ViewportTop, _player);
     }
 
     private void ScreenBottomCollision(float birdBottom, float floorTop) {
         if (!(birdBottom >= floorTop)) return;
-        CollideManager.Instance.InvokeCollisionEvent(CollisionType.ViewportBottom, _bluebirdPreservation, _bottomFloorPosition.Y);
+        CollideManager.Instance.InvokeViewportCollisionEvent(ViewportCollisionType.ViewportBottom, _player,
+            _bottomFloorPosition.Y);
+    }
+
+    private void PipeCollision() {
+        var birdRectangle = Utility.CreateRectangle(_player.Position, _bluebird.Width, _bluebird.Height);
+
+        foreach (var (topPipe, bottomPipe) in PipeManager.GetPipeQueue().ToArray()) {
+            if (topPipe.Position.X < _player.Position.X - topPipe.Rectangle.Width * _pipeScale.X) continue;
+
+            CollideManager.HandleTopPipeCollision(birdRectangle, topPipe, _player, _pipeScale.X);
+            CollideManager.HandleBottomPipeCollision(birdRectangle, bottomPipe, _player, _pipeScale.X, _bottomFloorPosition.Y);
+        }
     }
 
     private bool TryMovePipes() {
-        if (PipeManager.IsEmpty()) return false;
+            if (PipeManager.IsEmpty()) return false;
 
-        foreach (var (topPipe, bottomPipe) in PipeManager.GetPipeQueue()) {
-            topPipe.DecreasePosX(1);
-            bottomPipe.DecreasePosX(1);
+            foreach (var (topPipe, bottomPipe) in PipeManager.GetPipeQueue()) {
+                topPipe.DecreasePosX(BackgroundScrollingSpeed);
+                bottomPipe.DecreasePosX(BackgroundScrollingSpeed);
+            }
+            return true;
         }
-        return true;
-    }
-
-    private Tuple<Rectangle, Rectangle> CalculateRandomPipeHeight(GameTime gameTime) {
-        var pipeHeight =
-            100 +
-            (int)Math.Sin(_createRandomNumber(gameTime.ElapsedGameTime.Milliseconds % 2)) +
-            _createRandomNumber(_pipeTexture.Height / 2);
-        var topPipeRectangle = new Rectangle( 0, 0, _pipeTexture.Width, pipeHeight);
-
-        var bottomHeight = Game.GraphicsDevice.Viewport.Height -
-                           _pipeTexture.Height / 2 -
-                           pipeHeight -
-                           DistanceBetweenPipe;
-        var bottomPipeRectangle = new Rectangle( 0, 0, _pipeTexture.Width, bottomHeight);
-
-        return new Tuple<Rectangle, Rectangle>(topPipeRectangle, bottomPipeRectangle);
-    }
 
 }

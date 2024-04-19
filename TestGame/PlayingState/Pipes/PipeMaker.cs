@@ -14,6 +14,7 @@ public class PipeMaker: IPipeData<PipeMaker, Pipe> {
     private static ContentManager _contentManager;
 
 
+
     public PipeMaker SetSprite(SpritePreservation pipeSprite) {
         SpritePreservation = pipeSprite;
         return this;
