@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Principal;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TestGame.Resource;
@@ -38,17 +35,18 @@ public class MainMenuState : AbstractState {
 
 
 
-    public MainMenuState(GameStateManager gameStateManager, Game game, GraphicsDeviceManager graphicsDeviceManager): base(gameStateManager, game, graphicsDeviceManager) {
-        _mainMenuResource = ResourceManager.GetInstance(game.Content);
+    public MainMenuState(GameStateManager gameStateManager, Game game): base(gameStateManager, game) {
+        ResourceManager.ContentManagerProvider.ContentManager = game.Content;
+        _mainMenuResource = ResourceManager.Instance;
 
-        _maxWidth = GraphicsDeviceManager.GraphicsDevice.Viewport.Width;
-        _maxHeight = GraphicsDeviceManager.GraphicsDevice.Viewport.Height;
+        _maxWidth = game.GraphicsDevice.Viewport.Width;
+        _maxHeight = game.GraphicsDevice.Viewport.Height;
 
         _widthBaseSize = _maxWidth - 600;
         _heightBaseSize = _maxHeight - 200;
 
-        _currentBirdLocation.X = (_maxWidth / 2) - 17;
-        _currentBirdLocation.Y = (_maxHeight / 2) + 37;
+        _currentBirdLocation.X = (_maxWidth / 2f) - 17;
+        _currentBirdLocation.Y = (_maxHeight / 2f) + 37;
 
         _birdList = new List<Texture2D>();
     }
@@ -68,7 +66,7 @@ public class MainMenuState : AbstractState {
         _birdList.Add(_redbird);
         _birdList.Add(_yellowbird);
 
-        _timedUpdate = new TimedUpdate(TimedUpdate.CheckTime.ONE_SECOND);
+        _timedUpdate = new TimedUpdate(TimedUpdate.CheckTime.OneSecond);
     }
 
     public override void Exit() {
@@ -80,7 +78,7 @@ public class MainMenuState : AbstractState {
 
     public override void Update(GameTime gameTime) {
         if (UserPressedStart()) {
-            StateManager.ChangeState(new PlayingState.PlayingState(StateManager, Game, GraphicsDeviceManager, _mainMenuResource));
+            StateManager.ChangeState(new PlayingState.PlayingState(StateManager, Game));
         }
 
         if (_timedUpdate.UpdateTimer(gameTime)) {

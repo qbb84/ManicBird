@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TestGame.MainMenu;
+using TestGame.PlayingState.EventRegister;
 using TestGame.StateMachine;
 
 namespace TestGame;
@@ -23,10 +24,10 @@ public class Game1 : Game {
     }
 
     protected override void Initialize() {
-        _stateManager.ChangeState(new MainMenuState(_stateManager, this, _graphics));
-
+        _stateManager.ChangeState(new MainMenuState(_stateManager, this));
         Window.Title = "ManicBird";
 
+        var eventRegistration = new EventRegistration();
 
         base.Initialize();
     }
@@ -43,7 +44,7 @@ public class Game1 : Game {
     protected override void Draw(GameTime gameTime) {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, DepthStencilState.Default, RasterizerState.CullNone);
         _stateManager.Draw(_spriteBatch);
         _spriteBatch.End();
 
