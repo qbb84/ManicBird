@@ -9,11 +9,11 @@ public struct TimedUpdate {
     private CheckTime _checkTime { get; set; }
 
     public enum CheckTime {
-        OneSecond,
-        TwoSecond,
-        ThreeSecond,
-        FourSecond,
-        FiveSecond,
+        OneSecond = 1,
+        TwoSecond = 2,
+        ThreeSecond = 3,
+        FourSecond = 4,
+        FiveSecond = 5,
     }
 
     public TimedUpdate(CheckTime checkTime) {

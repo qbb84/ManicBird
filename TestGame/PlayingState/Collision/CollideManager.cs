@@ -66,6 +66,7 @@ internal sealed class CollideManager {
         if (birdRectangle.Intersects(topBottomRect)) {
             Instance.InvokePipeCollisionEvent(
                 PipeCollisionType.Top, player, topPipe, null, true);
+            return;
         }
 
         if (birdRectangle.Intersects(topPipeRect)) {
@@ -84,6 +85,7 @@ internal sealed class CollideManager {
         if (birdRectangle.Intersects(bottomTopRect)) {
             Instance.InvokePipeCollisionEvent(
                 PipeCollisionType.Bottom, player, null, bottomPipe, null, true);
+            return;
         }
 
         if (birdRectangle.Intersects(bottomPipeRect)) {

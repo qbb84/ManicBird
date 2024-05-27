@@ -29,8 +29,6 @@ public class ViewportCollideEvent {
                 birdY = 0;
 
                 bluebirdPreservation.Position = new Vector2(birdX, 0);
-
-                Console.WriteLine("TOP!!!");
                 break;
             }
             case ViewportCollisionType.ViewportBottom: {

@@ -272,7 +272,7 @@ public sealed class PlayingState : AbstractState {
     }
 
     private void PipeCollision() {
-        var birdRectangle = Utility.CreateRectangle(_player.Position, _bluebird.Width, _bluebird.Height);
+        var birdRectangle = Utility.CreateRectangle(_player.Position, _player.Texture.Width, _player.Texture.Height);
 
         foreach (var (topPipe, bottomPipe) in PipeManager.GetPipeQueue().ToArray()) {
             if (topPipe.Position.X < _player.Position.X - topPipe.Rectangle.Width * _pipeScale.X) continue;

@@ -27,20 +27,19 @@ public class PipeCollideEvent {
         switch (e.PipeCollisionType) {
             case PipeCollisionType.Top:
                 if (hitTopPipeBottom != null) {
-                    var birdY = player.Position.Y + player.Texture.Height;
-                    player.Position = new Vector2(player.Position.X, birdY);
-                    return;
+                    player.Position = new Vector2(player.Position.X, topPipe.Rectangle.Height);
+                    break;
                 }
-                var birdTopX = Math.Clamp(player.Position.X, 0, topPipe!.Position.X - player.Texture.Width);
+                var birdTopX = Math.Clamp(player.Position.X, 0, Math.Abs(topPipe!.Position.X - player.Texture.Width));
                 player.Position = new Vector2(birdTopX, player.Position.Y);
                 break;
             case PipeCollisionType.Bottom:
                 if (hitBottomPipeTop != null) {
-                    var birdY = player.Position.Y - player.Texture.Height;
-                    player.Position = new Vector2(player.Position.X, birdY);
-                    return;
+                    // var birdY = player.Position.Y - player.Texture.Height;
+                    player.Position = new Vector2(player.Position.X, player.Position.Y - player.Texture.Height);
+                    break;
                 }
-                var birdBottomX = Math.Clamp(player.Position.X, 0, bottomPipe!.Position.X - player.Texture.Width);
+                var birdBottomX = Math.Clamp(player.Position.X, 0, Math.Abs(bottomPipe!.Position.X - player.Texture.Width));
                 player.Position = new Vector2(birdBottomX, player.Position.Y);
                 break;
             default:
