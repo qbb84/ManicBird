@@ -1,0 +1,1 @@
+This repository was a weekend project of the popular game Flappy Bird, developed using the MonoGame framework in C#. The game involves guiding a bird through a series of pipes without hitting them. This project was created as a learning exercise to understand the basics of MonoGame.
